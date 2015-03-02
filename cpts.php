@@ -116,6 +116,66 @@ class fdmCustomPostTypes {
 			);
 		}
 
+		// Add term page
+		function taxonomy_add_new_meta_field() {
+			// this will add the custom meta field to the add new term page
+			?>
+			<div class="form-field">
+				<label for="term_meta[custom_term_meta]"><?php _e( 'Menu Style', 'pippin' ); ?></label>
+				<!-- <select name="term_meta[custom_term_meta" id="term_meta[custom_term_meta]">
+					<option value="option_1">Fresh Milk</option>
+					<option value="option_2">Old Cheese</option>
+					<option value="option_3">Hot Bread</option>
+				</select> -->
+				<input type="text" name="term_meta[custom_term_meta]" id="term_meta[custom_term_meta]" value="<?php echo esc_attr( $term_meta['custom_term_meta'] ) ? esc_attr( $term_meta['custom_term_meta'] ) : ''; ?>">
+				<p class="description"><?php _e( 'Choose a Menu Style','pippin' ); ?></p>
+			</div>
+		<?php
+		}
+		add_action( 'fdm-menu-section_add_form_fields', 'taxonomy_add_new_meta_field', 10, 2 );
+
+		// Save extra taxonomy fields callback function.
+		function save_taxonomy_custom_meta( $term_id ) {
+			if ( isset( $_POST['term_meta'] ) ) {
+				$t_id = $term_id;
+				$term_meta = get_option( "taxonomy_$t_id" );
+				$cat_keys = array_keys( $_POST['term_meta'] );
+				foreach ( $cat_keys as $key ) {
+					if ( isset ( $_POST['term_meta'][$key] ) ) {
+						$term_meta[$key] = $_POST['term_meta'][$key];
+					}
+				}
+				// Save the option array.
+				update_option( "taxonomy_$t_id", $term_meta );
+			}
+		}  
+		add_action( 'edited_fdm-menu-section', 'save_taxonomy_custom_meta', 10, 2 );  
+		add_action( 'create_fdm-menu-section', 'save_taxonomy_custom_meta', 10, 2 );
+
+		// Edit term page
+		function taxonomy_edit_meta_field($term) {
+		 
+			// put the term ID into a variable
+			$t_id = $term->term_id;
+		 
+			// retrieve the existing value(s) for this meta field. This returns an array
+			$term_meta = get_option( "taxonomy_$t_id" ); ?>
+			<tr class="form-field">
+			<th scope="row" valign="top"><label for="term_meta[custom_term_meta]"><?php _e( 'Menu Style', 'pippin' ); ?></label></th>
+				<td>
+	<!-- 				<select name="term_meta[custom_term_meta" id="term_meta[custom_term_meta]">
+						<option value="option_1" <?php if ( $term_meta['custom_term_meta'] == 'option_1'){echo __( 'selected');}?>>Option 1</option>
+						<option value="option_2" <?php if ( $term_meta['custom_term_meta'] == 'option_2'){echo __( 'selected');}?>>Option 2</option>
+						<option value="option_3" <?php if ( $term_meta['custom_term_meta'] == 'option_3'){echo __( 'selected');}?>>Option 3</option>
+					</select> -->
+					<input type="text" name="term_meta[custom_term_meta]" id="term_meta[custom_term_meta]" value="<?php echo esc_attr( $term_meta['custom_term_meta'] ) ? esc_attr( $term_meta['custom_term_meta'] ) : ''; ?>">
+					<p class="description"><?php _e( 'Choose a Menu Style','pippin' ); ?></p>
+				</td>
+			</tr>
+		<?php
+		}
+		add_action( 'fdm-menu-section_edit_form_fields', 'taxonomy_edit_meta_field', 10, 2 );
+
 		// Define the Menu Item custom post type
 		$args = array(
 			'labels' => array(
@@ -283,6 +343,25 @@ class fdmCustomPostTypes {
 			'fdm_menu_footer_content',
 			array(
 				'textarea_rows' => 5
+			)
+		);
+	}
+
+	/**
+	 * Print the Menu footer HTML
+	 * @since 1.0
+	 */
+	public function show_menu_style() {
+
+		// Retrieve existing settings
+		global $post;
+		$styler = get_post_meta( $post->ID, 'fdm_menu_style_content', true );
+
+		wp_editor(
+			$styler,
+			'fdm_menu_style_content',
+			array(
+				'textarea_rows' => 1
 			)
 		);
 	}

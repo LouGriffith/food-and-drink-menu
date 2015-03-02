@@ -13,7 +13,10 @@
 		<div class="fdm-item-panel">
 
 			<?php echo $this->print_elements( 'body' ); ?>
-
+			<?php 
+				if ( current_user_can('edit_post') ) { ?>
+					<a class="fdm-edit-item" href="<?php echo get_edit_post_link( $this->id ); ?>">Edit Item</a>
+			<?php } ?>
 			<div class="clearfix"></div>
 		</div>
 
